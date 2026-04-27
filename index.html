@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Évolution du Seuil de Revente à Perte</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F7F3ED;
+    --dark: #1A1A2E;
+    --accent: #3A7C4A;
+    --accent-light: #6AAF7A;
+    --loi-galland: #C8773A;
+    --loi-jacob1: #7B5EA7;
+    --loi-jacob2: #C0392B;
+    --loi-chatel: #1A6B8A;
+    --loi-egalim: #3A7C4A;
+    --text: #2C2C3E;
+    --border: #D4C9B8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--cream);
+    color: var(--text);
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--dark);
+    color: var(--cream);
+    padding: 3rem 4rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(200,119,58,0.15);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 200px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(200,119,58,0.08);
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.6rem;
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+  }
+  header h1 span { color: var(--accent-light); }
+  header p.subtitle {
+    margin-top: 0.6rem;
+    font-size: 1rem;
+    color: #ddd;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  /* FIL ROUGE */
+  .fil-rouge {
+    background: white;
+    border-left: 5px solid var(--accent);
+    margin: 2.5rem 3rem;
+    padding: 1.8rem 2.2rem;
+    border-radius: 0 12px 12px 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    position: relative;
+  }
+  .fil-rouge-label {
+    position: absolute;
+    top: -12px; left: 20px;
+    background: var(--accent);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 14px;
+    border-radius: 20px;
+  }
+  .fil-rouge h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    color: var(--dark);
+    margin-bottom: 1.2rem;
+  }
+  .donnees-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  .donnee-box {
+    background: var(--cream);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .donnee-box .label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #444;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+  .donnee-box .valeur {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .donnee-box .detail {
+    font-size: 0.92rem;
+    color: #111;
+    font-weight: 700;
+    margin-top: 0.2rem;
+  }
+  .note-calcul {
+    margin-top: 1.2rem;
+    padding: 0.85rem 1.2rem;
+    background: #fff8f3;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text);
+    border: 1px dashed var(--accent-light);
+  }
+  .note-calcul { font-weight: 700; }
+  .note-calcul strong { color: var(--accent); }
+
+  /* SECTION TITRE */
+  .section-title {
+    margin: 2rem 3rem 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-title h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--dark);
+    color: #666;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* LOIS CONTAINER */
+  .lois-container {
+    padding: 0.5rem 3rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* CARTE LOI */
+  .loi-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideIn 0.5s forwards;
+  }
+  .loi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  }
+
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .loi-card:nth-child(1) { animation-delay: 0.1s; }
+  .loi-card:nth-child(2) { animation-delay: 0.2s; }
+  .loi-card:nth-child(3) { animation-delay: 0.3s; }
+  .loi-card:nth-child(4) { animation-delay: 0.4s; }
+  .loi-card:nth-child(5) { animation-delay: 0.5s; }
+
+  .loi-header {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.2rem 1.8rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .loi-annee {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 900;
+    opacity: 0.15;
+    min-width: 5rem;
+    line-height: 1;
+  }
+  .loi-nom {
+    flex: 1;
+  }
+  .loi-nom h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--dark);
+  }
+  .loi-nom p {
+    font-size: 0.78rem;
+    color: #555;
+    margin-top: 0.1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .srp-badge {
+    background: var(--dark);
+    color: white;
+    border-radius: 10px;
+    padding: 0.5rem 1.1rem;
+    text-align: center;
+    min-width: 90px;
+  }
+  .srp-badge .srp-label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.85);
+    display: block;
+  }
+  .srp-badge .srp-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    display: block;
+    line-height: 1.2;
+  }
+  .toggle-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    transition: all 0.2s;
+    color: #555;
+  }
+  .toggle-btn:hover { color: var(--text); }
+  .toggle-btn.open { transform: rotate(180deg); opacity: 1; }
+
+  /* LOIS COLORS */
+  .loi-galland .loi-header { border-left: 5px solid var(--loi-galland); }
+  .loi-galland .loi-annee { color: var(--loi-galland); opacity: 0.2; }
+  .loi-galland .srp-badge { background: var(--loi-galland); }
+
+  .loi-jacob1 .loi-header { border-left: 5px solid var(--loi-jacob1); }
+  .loi-jacob1 .loi-annee { color: var(--loi-jacob1); opacity: 0.2; }
+  .loi-jacob1 .srp-badge { background: var(--loi-jacob1); }
+
+  .loi-jacob2 .loi-header { border-left: 5px solid var(--loi-jacob2); }
+  .loi-jacob2 .loi-annee { color: var(--loi-jacob2); opacity: 0.2; }
+  .loi-jacob2 .srp-badge { background: var(--loi-jacob2); }
+
+  .loi-chatel .loi-header { border-left: 5px solid var(--loi-chatel); }
+  .loi-chatel .loi-annee { color: var(--loi-chatel); opacity: 0.2; }
+  .loi-chatel .srp-badge { background: var(--loi-chatel); }
+
+  .loi-egalim .loi-header { border-left: 5px solid var(--loi-egalim); }
+  .loi-egalim .loi-annee { color: var(--loi-egalim); opacity: 0.2; }
+  .loi-egalim .srp-badge { background: var(--loi-egalim); }
+
+  /* DETAIL */
+  .loi-detail {
+    display: none;
+    padding: 0 1.8rem 1.8rem 1.8rem;
+    border-top: 1px solid var(--border);
+  }
+  .loi-detail.open { display: block; }
+
+  .extrait-loi {
+    margin: 1.2rem 0 1rem;
+    padding: 1rem 1.4rem;
+    border-radius: 8px;
+    background: #fafafa;
+    border-left: 3px solid var(--border);
+  }
+  .extrait-loi .extrait-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 0.5rem;
+  }
+  .extrait-loi blockquote {
+    font-style: italic;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text);
+    color: #222;
+  }
+
+  .calcul-section {
+    margin-top: 1.2rem;
+  }
+  .calcul-section h4 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 0.8rem;
+  }
+  .calcul-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.75rem 1.1rem;
+    background: var(--cream);
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+  .step-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: white;
+  }
+  .step-formula {
+    flex: 1;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .step-formula .formula { font-weight: 600; }
+  .step-formula .result {
+    margin-left: 0.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  .step.final {
+    background: var(--dark);
+    color: white;
+    font-weight: 600;
+  }
+  .step.final .step-num { background: rgba(255,255,255,0.2); color: white; }
+
+  .loi-galland .step-num { background: var(--loi-galland); }
+  .loi-galland .step.final { background: var(--loi-galland); }
+  .loi-jacob1 .step-num { background: var(--loi-jacob1); }
+  .loi-jacob1 .step.final { background: var(--loi-jacob1); }
+  .loi-jacob2 .step-num { background: var(--loi-jacob2); }
+  .loi-jacob2 .step.final { background: var(--loi-jacob2); }
+  .loi-chatel .step-num { background: var(--loi-chatel); }
+  .loi-chatel .step.final { background: var(--loi-chatel); }
+  .loi-egalim .step-num { background: var(--loi-egalim); }
+  .loi-egalim .step.final { background: var(--loi-egalim); }
+
+  .impact-note {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-style: italic;
+    font-weight: 700;
+    background: #fff8f0;
+    border: 1px dashed var(--accent-light);
+    color: var(--accent);
+  }
+  .impact-note::before { content: '💡 '; }
+
+  /* TIMELINE FOOTER */
+  .timeline-section {
+    background: var(--dark);
+    padding: 2rem 3rem;
+    margin-top: 1rem;
+  }
+  .timeline-section h3 {
+    font-family: 'Playfair Display', serif;
+    color: var(--cream);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    color: #ccc;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .timeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 20px; right: 20px;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+  }
+  .timeline-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .timeline-dot {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: white;
+    border: 3px solid var(--dark);
+  }
+  .timeline-year {
+    font-size: 0.65rem;
+    color: #bbb;
+    letter-spacing: 1px;
+  }
+  .timeline-srp {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+  }
+  .timeline-nom {
+    font-size: 0.6rem;
+    text-align: center;
+    color: #aaa;
+    max-width: 80px;
+    line-height: 1.3;
+  }
+  .arrow {
+    color: rgba(255,255,255,0.2);
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* EXPAND ALL */
+  .controls {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 3rem 0.5rem;
+  }
+  .btn-expand {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: #444;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-expand:hover { opacity: 1; background: white; }
+
+  .loi-galland .extrait-loi blockquote { color: var(--loi-galland); }
+  .loi-galland .impact-note { color: var(--loi-galland); border-color: var(--loi-galland); background: #fff8f3; }
+  .loi-jacob1 .extrait-loi blockquote { color: var(--loi-jacob1); }
+  .loi-jacob1 .impact-note { color: var(--loi-jacob1); border-color: var(--loi-jacob1); background: #f8f5ff; }
+  .loi-jacob2 .extrait-loi blockquote { color: var(--loi-jacob2); }
+  .loi-jacob2 .impact-note { color: var(--loi-jacob2); border-color: var(--loi-jacob2); background: #fff5f5; }
+  .loi-chatel .extrait-loi blockquote { color: var(--loi-chatel); }
+  .loi-chatel .impact-note { color: var(--loi-chatel); border-color: var(--loi-chatel); background: #f3f8fb; }
+  .loi-egalim .extrait-loi blockquote { color: var(--loi-egalim); }
+  .loi-egalim .impact-note { color: var(--loi-egalim); border-color: var(--loi-egalim); background: #f3fbf5; }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="subtitle">Commerce — Relations commerciales</p>
+  <h1>Évolution du <span>Seuil de Revente à Perte</span></h1>
+</header>
+
+<!-- FIL ROUGE -->
+<div class="fil-rouge">
+  <span class="fil-rouge-label">🧵 Cas fil rouge</span>
+  <h2>Fabricant de sachets d'amandes décortiquées</h2>
+  <div class="donnees-grid">
+    <div class="donnee-box">
+      <div class="label">Prix de vente fabricant</div>
+      <div class="valeur">11 €</div>
+      <div class="detail">Prix brut facturé à la centrale</div>
+    </div>
+    <div class="donnee-box">
+      <div class="label">RRR sur facture</div>
+      <div class="valeur">1 €</div>
+      <div class="detail">Remises, rabais, ristournes → Prix net = <strong>10 €</strong></div>
+    </div>
+    <div class="donnee-box">
+      <div class="label">Marges arrière</div>
+      <div class="valeur">35 %</div>
+      <div class="detail">35 % du prix net = 3,5 € (coopération commerciale, etc.)</div>
+    </div>
+  </div>
+  <div class="note-calcul">
+    <strong>Rappel :</strong> Le SRP est le prix en dessous duquel un distributeur ne peut pas revendre un produit. Son mode de calcul a évolué avec chaque loi, réduisant progressivement la marge du distributeur.
+  </div>
+</div>
+
+<!-- CONTRÔLES -->
+<div class="controls">
+  <button class="btn-expand" onclick="toggleAll()">Tout déplier / replier</button>
+</div>
+
+<!-- SECTION TITRE -->
+<div class="section-title"><h2>Les lois successives</h2></div>
+
+<!-- LOIS -->
+<div class="lois-container">
+
+  <!-- LOI GALLAND -->
+  <div class="loi-card loi-galland">
+    <div class="loi-header" onclick="toggle(this)">
+      <div class="loi-annee">1996</div>
+      <div class="loi-nom">
+        <h3>Loi Galland</h3>
+        <p>1996 — Prix net facturé</p>
+      </div>
+      <div class="srp-badge">
+        <span class="srp-label">SRP</span>
+        <span class="srp-value">10,00 €</span>
+      </div>
+      <button class="toggle-btn">▼</button>
+    </div>
+    <div class="loi-detail">
+      <div class="extrait-loi">
+        <div class="extrait-label">Extrait de la loi</div>
+        <blockquote>« Est interdit le fait, pour tout commerçant, de revendre un produit en l'état à un prix inférieur à son prix d'achat effectif. Le prix d'achat effectif est le prix unitaire net figurant sur la facture d'achat. »</blockquote>
+      </div>
+      <div class="calcul-section">
+        <h4>Application chiffrée</h4>
+        <div class="calcul-steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-formula">
+              <span class="formula">SRP = Prix net facturé</span>
+              <span style="color:#333; font-size:0.9rem; display:block">Les marges arrière (3,5 €) ne sont PAS déduites du SRP</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-formula">
+              <span class="formula">Prix brut − RRR sur facture</span>
+              <span class="result">= 11 € − 1 € = 10 €</span>
+            </div>
+          </div>
+          <div class="step final">
+            <div class="step-num">✓</div>
+            <div class="step-formula">
+              <span class="formula">SRP Loi Galland</span>
+              <span class="result">= 10,00 €</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="impact-note">Le SRP est calculé uniquement sur le prix net facturé — les marges arrière (3,5 €) sont totalement ignorées. Le distributeur ne peut pas revendre en dessous de 10 €, mais il perçoit 3,5 € de marges arrière hors facture : sa marge réelle est de 3,5 €, sans que cela profite au consommateur. Ce "décrochage" entre prix facturé et coût réel est le problème central que les lois suivantes chercheront à corriger.</div>
+    </div>
+  </div>
+
+  <!-- JACOB-DUTREIL 1 -->
+  <div class="loi-card loi-jacob1">
+    <div class="loi-header" onclick="toggle(this)">
+      <div class="loi-annee">2006</div>
+      <div class="loi-nom">
+        <h3>Amendement Jacob-Dutreil 1</h3>
+        <p>2006 — Intégration partielle des marges arrière (&gt; 20%)</p>
+      </div>
+      <div class="srp-badge">
+        <span class="srp-label">SRP</span>
+        <span class="srp-value">8,60 €</span>
+      </div>
+      <button class="toggle-btn">▼</button>
+    </div>
+    <div class="loi-detail">
+      <div class="extrait-loi">
+        <div class="extrait-label">Extrait de la loi</div>
+        <blockquote>« Le prix d'achat effectif est minoré des avantages financiers consentis par le vendeur exprimés en pourcentage du prix unitaire net du produit, dans la mesure où ils excèdent un seuil de 20 % de ce même prix. »<br><br>« Le montant minorant le prix unitaire net ne peut excéder 40 % du montant total de l'ensemble des autres avantages financiers consentis par le vendeur, exprimé en pourcentage du prix unitaire net du produit. »<br><span style="font-size:0.82rem; font-style:normal; color:#555;">— Circulaire DGCCRF du 8 décembre 2005 relative aux relations commerciales (JORF)</span></blockquote>
+      </div>
+      <div class="calcul-section">
+        <h4>Application chiffrée</h4>
+        <div class="calcul-steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-formula">
+              <span class="formula">Marges arrière = 35 % du prix net</span>
+              <span class="result">= 35 % × 10 € = 3,5 €</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-formula">
+              <span class="formula">Partie déductible = 35 % − 20 % = 15 %</span>
+              <span class="result">= 15 % × 10 € = 1,5 €</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-formula">
+              <span class="formula">Butoir 40 % × total des marges arrière (35 % × 10 €)</span>
+              <span class="result">= 40 % × 3,5 € = 1,4 €</span>
+              <span style="color:#333; font-size:0.9rem; display:block">On retient le montant le plus faible : min(1,5 € ; 1,4 €) = 1,4 €</span>
+            </div>
+          </div>
+          <div class="step final">
+            <div class="step-num">✓</div>
+            <div class="step-formula">
+              <span class="formula">SRP = 11 − 1 − 1,4</span>
+              <span class="result">= 8,60 €</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="impact-note">Première brèche dans la Loi Galland : une partie des marges arrière entre dans le calcul du SRP. Le prix plancher baisse légèrement, mais l'effet reste limité par le seuil de 20 % et le butoir de 40 %.</div>
+    </div>
+  </div>
+
+  <!-- JACOB-DUTREIL 2 -->
+  <div class="loi-card loi-jacob2">
+    <div class="loi-header" onclick="toggle(this)">
+      <div class="loi-annee">2007</div>
+      <div class="loi-nom">
+        <h3>Amendement Jacob-Dutreil 2</h3>
+        <p>2007 — Seuil abaissé à 15 %</p>
+      </div>
+      <div class="srp-badge">
+        <span class="srp-label">SRP</span>
+        <span class="srp-value">8,00 €</span>
+      </div>
+      <button class="toggle-btn">▼</button>
+    </div>
+    <div class="loi-detail">
+      <div class="extrait-loi">
+        <div class="extrait-label">Extrait de la loi</div>
+        <blockquote>« Le seuil au-delà duquel les avantages financiers sont pris en compte dans le calcul du prix d'achat effectif est abaissé de 20 % à 15 %, afin d'accroître la part des marges arrière intégrée dans le seuil de revente à perte. »</blockquote>
+      </div>
+      <div class="calcul-section">
+        <h4>Application chiffrée</h4>
+        <div class="calcul-steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-formula">
+              <span class="formula">Marges arrière = 35 % du prix net</span>
+              <span class="result">= 35 % × 10 € = 3,5 €</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-formula">
+              <span class="formula">Partie déductible = 35 % − 15 % = 20 %</span>
+              <span class="result">= 20 % × 10 € = 2 €</span>
+              <span style="color:#333; font-size:0.9rem; display:block">Le butoir à 40 % applicable en 2006 disparaît : la déduction s'applique sans plafond supplémentaire.</span>
+            </div>
+          </div>
+          <div class="step final">
+            <div class="step-num">✓</div>
+            <div class="step-formula">
+              <span class="formula">SRP = 11 − 1 − 2</span>
+              <span class="result">= 8,00 €</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="impact-note">En abaissant le seuil de 20 % à 15 % et en supprimant le butoir à 40 %, davantage de marges arrière entrent dans le calcul sans limite. Le SRP diminue plus franchement, accentuant la capacité des distributeurs à jouer sur les prix d'appel.</div>
+    </div>
+  </div>
+
+  <!-- LOI CHATEL / LME -->
+  <div class="loi-card loi-chatel">
+    <div class="loi-header" onclick="toggle(this)">
+      <div class="loi-annee">2008</div>
+      <div class="loi-nom">
+        <h3>Loi Châtel — LME</h3>
+        <p>2008 — Triple net : toutes les marges arrière déduites</p>
+      </div>
+      <div class="srp-badge">
+        <span class="srp-label">SRP</span>
+        <span class="srp-value">6,50 €</span>
+      </div>
+      <button class="toggle-btn">▼</button>
+    </div>
+    <div class="loi-detail">
+      <div class="extrait-loi">
+        <div class="extrait-label">Extrait de la loi</div>
+        <blockquote>« Le prix d'achat effectif est le prix unitaire net figurant sur la facture d'achat, minoré de l'ensemble des avantages financiers consentis par le vendeur. Le prix ainsi obtenu constitue le "triple net". »</blockquote>
+      </div>
+      <div class="calcul-section">
+        <h4>Application chiffrée</h4>
+        <div class="calcul-steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-formula">
+              <span class="formula">Prix net = Prix brut − RRR facture</span>
+              <span class="result">= 11 € − 1 € = 10 €</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-formula">
+              <span class="formula">Total marges arrière (100 % déductibles)</span>
+              <span class="result">= 35 % × 10 € = 3,5 €</span>
+            </div>
+          </div>
+          <div class="step final">
+            <div class="step-num">✓</div>
+            <div class="step-formula">
+              <span class="formula">SRP "Triple net" = 11 − 1 − 3,5</span>
+              <span class="result">= 6,50 €</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="impact-note">Rupture majeure : toutes les marges arrière sont désormais intégrées dans le calcul du SRP. Le prix plancher tombe à 6,50 €, ce qui permet aux distributeurs de baisser davantage leurs prix de vente au consommateur.</div>
+    </div>
+  </div>
+
+  <!-- LOI EGALIM -->
+  <div class="loi-card loi-egalim">
+    <div class="loi-header" onclick="toggle(this)">
+      <div class="loi-annee">2018</div>
+      <div class="loi-nom">
+        <h3>Loi EGalim</h3>
+        <p>Octobre 2018 — Relèvement du SRP de 10 % pour les produits alimentaires uniquement</p>
+      </div>
+      <div class="srp-badge">
+        <span class="srp-label">SRP</span>
+        <span class="srp-value">7,15 €</span>
+      </div>
+      <button class="toggle-btn">▼</button>
+    </div>
+    <div class="loi-detail">
+      <div class="extrait-loi">
+        <div class="extrait-label">Extrait de la loi</div>
+        <blockquote>« Pour les denrées alimentaires et les produits destinés à l'alimentation des animaux de compagnie, le seuil de revente à perte est relevé de 10 %. Cette disposition, initialement expérimentale, vise à améliorer la rémunération des producteurs agricoles en remontant les prix payés aux fournisseurs. »</blockquote>
+      </div>
+      <div class="calcul-section">
+        <h4>Application chiffrée</h4>
+        <div class="calcul-steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-formula">
+              <span class="formula">SRP de base (méthode LME triple net)</span>
+              <span class="result">= 6,50 €</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-formula">
+              <span class="formula">Relèvement EGalim + 10 %</span>
+              <span class="result">= 6,50 × 1,10 = 7,15 €</span>
+            </div>
+          </div>
+          <div class="step final">
+            <div class="step-num">✓</div>
+            <div class="step-formula">
+              <span class="formula">SRP EGalim (produits alimentaires d'appel)</span>
+              <span class="result">= 7,15 €</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="impact-note">Inversion de tendance : après des années de baisse du SRP, EGalim le remonte <strong>uniquement pour les denrées alimentaires et les produits destinés à l'alimentation des animaux de compagnie</strong>. Pour les autres produits, le SRP reste calculé selon la méthode LME (triple net). Dans notre exemple, les amandes décortiquées étant un produit alimentaire, elles sont bien concernées par ce relèvement.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TIMELINE -->
+<div class="timeline-section">
+  <h3>Synthèse — Évolution du SRP pour les amandes décortiquées</h3>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--loi-galland)">96</div>
+      <div class="timeline-year">1996</div>
+      <div class="timeline-srp">10,00 €</div>
+      <div class="timeline-nom">Loi Galland</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--loi-jacob1)">06</div>
+      <div class="timeline-year">2006</div>
+      <div class="timeline-srp">8,60 €</div>
+      <div class="timeline-nom">Jacob-Dutreil 1</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--loi-jacob2)">07</div>
+      <div class="timeline-year">2007</div>
+      <div class="timeline-srp">8,00 €</div>
+      <div class="timeline-nom">Jacob-Dutreil 2</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--loi-chatel)">08</div>
+      <div class="timeline-year">2008</div>
+      <div class="timeline-srp">6,50 €</div>
+      <div class="timeline-nom">LME / Châtel</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--loi-egalim)">18</div>
+      <div class="timeline-year">2018</div>
+      <div class="timeline-srp">7,15 €</div>
+      <div class="timeline-nom">Loi EGalim</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggle(header) {
+    const detail = header.nextElementSibling;
+    const btn = header.querySelector('.toggle-btn');
+    detail.classList.toggle('open');
+    btn.classList.toggle('open');
+  }
+
+  let allOpen = false;
+  function toggleAll() {
+    allOpen = !allOpen;
+    document.querySelectorAll('.loi-detail').forEach(d => {
+      d.classList.toggle('open', allOpen);
+    });
+    document.querySelectorAll('.toggle-btn').forEach(b => {
+      b.classList.toggle('open', allOpen);
+    });
+  }
+
+  // Ouvrir la première loi par défaut
+  document.querySelector('.loi-detail').classList.add('open');
+  document.querySelector('.toggle-btn').classList.add('open');
+</script>
+</body>
+</html>
